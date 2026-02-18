@@ -1,0 +1,10 @@
+# Development dependencies for CI/CD testing
+# Uses lightweight requirements-ci.txt instead of full requirements.txt
+
+-r requirements-ci.txt
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
+black>=23.0.0
+flake8>=6.1.0
+mypy>=1.7.0

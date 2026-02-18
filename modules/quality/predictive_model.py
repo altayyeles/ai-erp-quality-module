@@ -24,9 +24,17 @@ try:
     import shap
     from sklearn.model_selection import train_test_split
     from sklearn.metrics import classification_report, roc_auc_score, confusion_matrix
-except ImportError:
+    HAS_ML_LIBS = True
+except ImportError as e:
     xgb = None
     shap = None
+    train_test_split = None
+    classification_report = None
+    roc_auc_score = None
+    confusion_matrix = None
+    HAS_ML_LIBS = False
+    import warnings
+    warnings.warn(f"ML libraries not available: {e}. Quality prediction will be limited.")
 
 logger = logging.getLogger(__name__)
 
@@ -94,6 +102,12 @@ class QualityPredictiveModel:
         Returns:
             Dictionary containing training metrics
         """
+        if not HAS_ML_LIBS or xgb is None or shap is None:
+            raise ImportError(
+                "Required ML libraries (xgboost, shap, scikit-learn) not available. "
+                "Install them with: pip install xgboost shap scikit-learn"
+            )
+        
         logger.info("Training Quality Predictive Model...")
         
         # Split data
@@ -306,6 +320,12 @@ def create_demo_model() -> QualityPredictiveModel:
     Returns:
         Trained QualityPredictiveModel
     """
+    if not HAS_ML_LIBS or xgb is None or shap is None:
+        raise ImportError(
+            "Required ML libraries (xgboost, shap, scikit-learn) not available. "
+            "Install them with: pip install xgboost shap scikit-learn"
+        )
+    
     logger.info("Creating demo quality model with synthetic data...")
     
     # Generate synthetic training data
