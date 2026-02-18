@@ -193,6 +193,10 @@ class QualityPredictiveModel:
             ))
         else:
             # Fallback: use zero contributions if SHAP is not available
+            logger.warning(
+                "SHAP explainer not available. Returning zero feature contributions. "
+                "Feature importance information may be limited."
+            )
             feature_contributions = {feature: 0.0 for feature in self.feature_names}
         
         # Determine risk level
