@@ -1,0 +1,67 @@
+"""
+Maintenance Module API Routes
+Endpoints for predictive maintenance and RUL estimation
+"""
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import Optional, List
+
+router = APIRouter()
+
+
+class MaintenanceData(BaseModel):
+    machine_id: Optional[str] = "M001"
+    air_temperature: float = 298.0
+    process_temperature: float = 308.0
+    rotational_speed: float = 1500.0
+    torque: float = 40.0
+    tool_wear: float = 100.0
+    vibration: float = 0.5
+    humidity: float = 60.0
+    pressure: float = 1.0
+
+
+@router.post("/predict-rul")
+async def predict_rul(data: MaintenanceData):
+    """Predict Remaining Useful Life for a machine."""
+    try:
+        from modules.maintenance.rul_model import RULModel
+        
+        model = RULModel()
+        sensor_data = data.dict()
+        sensor_data.pop('machine_id', None)
+        
+        result = model.predict(sensor_data)
+        
+        return {"status": "success", "data": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/machines")
+async def get_all_machines():
+    """Get status of all machines."""
+    try:
+        from modules.maintenance.sensor_monitor import SensorMonitor
+        
+        monitor = SensorMonitor()
+        machines = monitor.get_all_machines()
+        
+        return {"status": "success", "data": machines}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/machines/{machine_id}")
+async def get_machine_status(machine_id: str):
+    """Get status of a specific machine."""
+    try:
+        from modules.maintenance.sensor_monitor import SensorMonitor
+        
+        monitor = SensorMonitor()
+        machine = monitor.get_machine_status(machine_id)
+        
+        return {"status": "success", "data": machine}
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
