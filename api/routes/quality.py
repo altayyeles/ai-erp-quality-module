@@ -31,15 +31,18 @@ async def predict_quality(readings: SensorReadings):
         model = create_demo_model()
         
         # Make prediction
-        result = model.predict_defect_probability(readings.dict())
+        result = model.predict_defect_probability(readings.model_dump())
+        
+        # Convert numpy types to native Python types for JSON serialization
+        feature_contributions = {k: float(v) for k, v in result.feature_contributions.items()}
         
         return {
             "status": "success",
             "data": {
-                "defect_probability": result.defect_probability,
-                "is_defect_predicted": result.is_defect_predicted,
+                "defect_probability": float(result.defect_probability),
+                "is_defect_predicted": bool(result.is_defect_predicted),
                 "risk_level": result.risk_level,
-                "feature_contributions": result.feature_contributions,
+                "feature_contributions": feature_contributions,
                 "recommendations": result.recommendations
             }
         }

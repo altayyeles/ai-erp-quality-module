@@ -26,7 +26,7 @@ async def score_supplier(supplier: SupplierData):
     try:
         from modules.supplier.supplier_score import SupplierScorer
         scorer = SupplierScorer()
-        result = scorer.score(supplier.dict())
+        result = scorer.score(supplier.model_dump())
         return {"status": "success", "data": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -38,7 +38,7 @@ async def procurement_advice(supplier: SupplierData):
     try:
         from modules.supplier.procurement_advisor import ProcurementAdvisor
         advisor = ProcurementAdvisor()
-        result = advisor.advise(supplier.dict())
+        result = advisor.advise(supplier.model_dump())
         return {"status": "success", "data": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

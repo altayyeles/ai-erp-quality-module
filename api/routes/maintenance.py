@@ -32,7 +32,7 @@ async def predict_rul(data: MachineData):
         model = RULModel()
         
         # Prepare data
-        X = pd.DataFrame([data.dict()])
+        X = pd.DataFrame([data.model_dump()])
         
         # Make prediction
         result = model.predict(X)
