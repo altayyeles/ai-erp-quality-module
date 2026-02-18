@@ -1,1 +1,1 @@
-# ai-erp-quality-modul
+# ai-erp-quality-module
