@@ -133,8 +133,15 @@ class QualityPredictiveModel:
             verbose=False
         )
         
-        # Create SHAP explainer
-        self.explainer = shap.TreeExplainer(self.model)
+        # Create SHAP explainer (with fallback for version incompatibility)
+        try:
+            self.explainer = shap.TreeExplainer(self.model)
+        except (ValueError, TypeError) as e:
+            logger.warning(
+                f"Failed to create SHAP explainer due to version incompatibility: {e}. "
+                "Predictions will work but without feature contribution explanations."
+            )
+            self.explainer = None
         
         # Evaluate
         y_pred = self.model.predict(X_test)
@@ -177,12 +184,16 @@ class QualityPredictiveModel:
         probability = float(self.model.predict_proba(X)[0, 1])
         is_defect = probability > 0.5
         
-        # Calculate SHAP values for explanation
-        shap_values = self.explainer.shap_values(X)
-        feature_contributions = dict(zip(
-            self.feature_names,
-            shap_values[0]
-        ))
+        # Calculate SHAP values for explanation (if explainer is available)
+        if self.explainer is not None:
+            shap_values = self.explainer.shap_values(X)
+            feature_contributions = dict(zip(
+                self.feature_names,
+                shap_values[0]
+            ))
+        else:
+            # Fallback: use zero contributions if SHAP is not available
+            feature_contributions = {feature: 0.0 for feature in self.feature_names}
         
         # Determine risk level
         risk_level = self._calculate_risk_level(probability)
@@ -298,9 +309,16 @@ class QualityPredictiveModel:
         self.model = model_data['model']
         self.feature_names = model_data['feature_names']
         
-        # Recreate SHAP explainer
+        # Recreate SHAP explainer (with fallback for version incompatibility)
         if self.model is not None:
-            self.explainer = shap.TreeExplainer(self.model)
+            try:
+                self.explainer = shap.TreeExplainer(self.model)
+            except (ValueError, TypeError) as e:
+                logger.warning(
+                    f"Failed to create SHAP explainer due to version incompatibility: {e}. "
+                    "Predictions will work but without feature contribution explanations."
+                )
+                self.explainer = None
         
         logger.info(f"✓ Model loaded from {path}")
     
